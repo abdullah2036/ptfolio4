@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gallery · Abdullah Bokhary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+  /* Layout: terminal bar, a split header (copy + ASCII render of the featured photo), filter tabs, photo grid, lightbox. */
+  :root{
+    --bg:#04060c; --fg:#e8f0ff; --dim:#97a4c0; --ghost:#5b6784;
+    --line:rgba(140,170,255,.13); --line2:rgba(140,170,255,.24);
+    --green:#39ff9f; --cyan:#22d3ee; --violet:#a78bfa;
+    --aurora:linear-gradient(100deg,#39ff9f 0%,#22d3ee 34%,#60a5fa 64%,#a78bfa 100%);
+    --sans:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --serif:"Instrument Serif", Georgia, "Times New Roman", serif;
+    --barH:calc(64px + env(safe-area-inset-top,0px));
+    --gut:max(24px, env(safe-area-inset-left,0px), env(safe-area-inset-right,0px));
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(60vmax 40vmax at 10% -10%, rgba(57,255,159,.12), transparent 70%),
+               radial-gradient(60vmax 40vmax at 100% 10%, rgba(34,211,238,.10), transparent 70%),
+               radial-gradient(70vmax 50vmax at 50% 120%, rgba(139,92,246,.12), transparent 70%)}
+  a{color:inherit}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+  ::selection{background:var(--cyan);color:#021018}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+
+  .bar{position:sticky;z-index:30;top:0;height:var(--barH);display:flex;align-items:center;gap:16px;
+    padding-top:env(safe-area-inset-top,0px);padding-left:var(--gut);padding-right:var(--gut);
+    background:linear-gradient(to bottom, rgba(4,6,12,.94), rgba(4,6,12,.7));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+  .mark{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;text-decoration:none;border:1px solid var(--line2);
+    background:linear-gradient(140deg, rgba(57,255,159,.14), rgba(139,92,246,.16));font-weight:600;font-size:13px;flex:none}
+  .prompt{min-width:0;flex:1;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prompt .u{color:var(--green)} .prompt .h{color:var(--cyan)} .prompt .p{color:var(--fg)} .prompt .d{color:var(--ghost);margin-left:.4ch}
+  .cur{display:inline-block;width:.62em;height:1.15em;background:var(--green);vertical-align:-2px;margin-left:.4ch;animation:blink 1.05s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .back{flex:none;text-decoration:none;color:var(--fg);border:1px solid var(--line2);border-radius:9px;padding:7px 12px;font-size:12px;transition:border-color .2s,color .2s}
+  .back:hover,.back:focus-visible{border-color:var(--cyan);color:var(--cyan)}
+  .back i{font-style:normal;color:var(--ghost)}
+  @media (max-width:640px){ .prompt .u,.prompt .at,.prompt .h,.prompt .c{display:none} }
+
+  main{position:relative;z-index:1;width:min(1200px, calc(100% - var(--gut) * 2));margin:0 auto;padding:clamp(28px,6vh,64px) 0 72px}
+  .head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(24px,5vw,72px);align-items:center;margin-bottom:clamp(28px,5vh,48px)}
+  .kick{margin:0 0 16px;font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--ghost)}
+  .kick::before{content:"";display:inline-block;width:22px;height:1px;margin-right:10px;vertical-align:middle;background:var(--aurora)}
+  h1{margin:0 0 16px;font-weight:550;font-size:clamp(40px,6vw,84px);line-height:1;letter-spacing:-.04em;text-wrap:balance}
+  h1 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em;background:var(--aurora);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.06em}
+  .lede{color:var(--dim);font-size:clamp(16px,1.4vw,18px);max-width:48ch;margin:0 0 22px}
+  .stats{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost)}
+  .stats b{color:var(--fg);font-weight:400}
+  .art{position:relative;margin:0;border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:#05080f;aspect-ratio:1.2}
+  .art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+  .art span{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ghost);
+    background:rgba(4,6,12,.75);padding:4px 8px;border-radius:6px}
+  .art span b{color:var(--cyan);font-weight:400}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px;padding:0;list-style:none}
+  .filters button{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);background:rgba(10,16,32,.6);border:1px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer;transition:all .2s}
+  .filters button span{color:var(--ghost);font-variant-numeric:tabular-nums}
+  .filters button:hover{border-color:var(--line2);color:var(--fg)}
+  .filters button[aria-pressed="true"]{color:#031612;background:linear-gradient(100deg,#39ff9f,#22d3ee);border-color:transparent}
+  .filters button[aria-pressed="true"] span{color:#0b3a2c}
+
+  .grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));gap:12px}
+  .grid li{min-width:0;animation:rise .5s cubic-bezier(.2,.7,.1,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}}
+  .tile{position:relative;display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#070b16;cursor:zoom-in;
+    aspect-ratio:9/14;font:inherit;color:inherit;text-align:left;transition:border-color .3s, transform .3s}
+  .tile img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.1,1)}
+  .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(to top, rgba(4,6,12,.92) 0%, rgba(4,6,12,.2) 38%, transparent 60%)}
+  .tile .cap{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:12px 13px;display:grid;gap:3px}
+  .tile .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--green)}
+  .tile .t{font-size:13.5px;line-height:1.35;color:var(--fg)}
+  .tile:hover,.tile:focus-visible{border-color:rgba(34,211,238,.55)}
+  .tile:hover img,.tile:focus-visible img{transform:scale(1.05)}
+  .count{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost);margin:0 0 14px}
+  .count b{color:var(--fg);font-weight:400}
+  .home{display:inline-flex;margin-top:40px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+    border-bottom:1px solid var(--line2);padding-bottom:3px}
+  .home:hover,.home:focus-visible{color:var(--cyan);border-color:var(--cyan)}
+
+  .lb{position:fixed;inset:0;z-index:80;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;
+    padding:calc(env(safe-area-inset-top,0px) + 56px) var(--gut) calc(env(safe-area-inset-bottom,0px) + 24px);
+    background:rgba(2,4,9,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .lb figure{margin:0;display:grid;justify-items:center;gap:12px;min-width:0;height:100%;grid-template-rows:minmax(0,1fr) auto}
+  .lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;border:1px solid var(--line2);background:#070b16}
+  .lb figcaption{font-size:14.5px;color:var(--dim);text-align:center;max-width:56ch}
+  .lb figcaption b{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--green);font-weight:400;margin-right:10px}
+  .lb button{background:rgba(10,16,32,.8);border:1px solid var(--line2);color:var(--fg);border-radius:999px;width:46px;height:46px;cursor:pointer;
+    font-family:var(--mono);font-size:16px;transition:border-color .2s,color .2s}
+  .lb button:hover,.lb button:focus-visible{border-color:var(--cyan);color:var(--cyan)}
+  .lb .close{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:var(--gut);width:auto;padding:0 16px;height:38px;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+
+  @media (max-width:760px){
+    .head{grid-template-columns:1fr}
+    .art{order:-1;aspect-ratio:1.6}
+    .grid{grid-template-columns:1fr 1fr;gap:10px}
+    .tile .t{font-size:12.5px}
+    .lb{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+    .lb .prev,.lb .next{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){ .cur,.grid li{animation:none} .tile img{transition:none} }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="mark" href="index.html" aria-label="Back to the portfolio">AB</a>
+  <div class="prompt" aria-hidden="true"><span class="u">abdullah</span><span class="at">@</span><span class="h">bokhary</span><span class="c">:</span><span class="p">~/gallery</span><span class="d">$</span><span class="cur"></span></div>
+  <a class="back" href="index.html#events"><i>$ </i>cd ..</a>
+</header>
+
+<main>
+  <section class="head">
+    <div>
+      <p class="kick">Events</p>
+      <h1>Digital <em>gallery</em></h1>
+      <p class="lede">Hackathons and conferences I&rsquo;ve attended: Miyahthon, LEAP, Black Hat MEA and iCAN at King Saud University.</p>
+      <div class="stats"><span><b>24</b> photos</span><span><b>4</b> events</span></div>
+    </div>
+    <figure class="art"><img src="assets/gallery/miyahthon-01.jpg" alt="The Miyahthon participant kit: badge, lanyard, stickers and a tumbler with my name on it" width="1154" height="1280"><span>fig.00 &mdash; <b>miyahthon.kit</b></span></figure>
+  </section>
+
+  <ul class="filters" id="filters" aria-label="Filter by event"></ul>
+  <p class="count" id="count" aria-live="polite"></p>
+  <ul class="grid" id="grid"></ul>
+  <a class="home" href="index.html#work">&larr; See the projects</a>
+</main>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="prev" id="lbPrev" type="button" aria-label="Previous photo">&larr;</button>
+  <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="next" id="lbNext" type="button" aria-label="Next photo">&rarr;</button>
+  <button class="close" id="lbClose" type="button">esc &middot; close</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var EVENTS = [
+    {id: "all", name: "All"},
+    {id: "miyahthon", name: "Miyahthon"},
+    {id: "leap", name: "LEAP"},
+    {id: "black-hat", name: "Black Hat"},
+    {id: "ksu-ican", name: "KSU iCAN"}
+  ];
+  var PHOTOS = [
+    ["miyahthon-01", "Miyahthon Water Hackathon. The participant kit: badge, lanyard, stickers and a tumbler with my name on it"],
+    ["miyahthon-02", "My participant badge"],
+    ["miyahthon-03", "The Miyahthon lobby"],
+    ["miyahthon-04", "The venue from above"],
+    ["miyahthon-05", "My name on the hackathon tumbler"],
+    ["miyahthon-06", "The atrium, with the Miyahthon sign and tables below"],
+    ["miyahthon-07", "Participant badge and notebook"],
+    ["leap-01", "The LEAP main registration entrance"],
+    ["leap-02", "The LEAP letters on the show floor"],
+    ["leap-03", "The Zain stand"],
+    ["leap-04", "Crowds between the halls"],
+    ["leap-05", "A tunnel of light at one of the stands"],
+    ["leap-06", "The HUMAIN stage"],
+    ["black-hat-01", "The #BlackHatMEA sign"],
+    ["black-hat-02", "My student badge"],
+    ["black-hat-03", "The exhibition hall"],
+    ["black-hat-04", "INE Security, the people behind my eCPPT"],
+    ["black-hat-05", "An OffSec card"],
+    ["black-hat-06", "Everything I brought home: stickers, brochures and badges"],
+    ["ksu-ican-01", "The iCAN main stage"],
+    ["ksu-ican-02", "King Saud University, at the conference entrance"],
+    ["ksu-ican-03", "The iCAN exhibition from above"],
+    ["ksu-ican-04", "A session in the main hall"],
+    ["ksu-ican-05", "A model of the King Saud University campus"]
+  ].map(function(p, i){ return {f: p[0], ev: p[0].replace(/-\d+$/, ""), cap: p[1], n: String(i + 1).padStart(2, "0")}; });
+
+  var grid = document.getElementById("grid"), filters = document.getElementById("filters"), count = document.getElementById("count");
+  var current = "all", visible = PHOTOS.slice();
+
+  EVENTS.forEach(function(ev){
+    var n = ev.id === "all" ? PHOTOS.length : PHOTOS.filter(function(p){ return p.ev === ev.id; }).length;
+    var li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-pressed", ev.id === current ? "true" : "false");
+    b.innerHTML = ev.name + " <span>" + String(n).padStart(2, "0") + "</span>";
+    b.addEventListener("click", function(){ setFilter(ev.id); });
+    li.appendChild(b); filters.appendChild(li);
+  });
+
+  function render(){
+    grid.innerHTML = "";
+    visible.forEach(function(p, i){
+      var li = document.createElement("li"), b = document.createElement("button");
+      li.style.animationDelay = Math.min(i * 30, 360) + "ms";
+      b.type = "button"; b.className = "tile"; b.setAttribute("aria-label", "Open photo " + p.n + ": " + p.cap);
+      b.innerHTML = '<img src="assets/gallery/' + p.f + '-t.jpg" alt="" loading="lazy" width="360" height="640">' +
+        '<span class="cap"><span class="n">' + p.n + '</span><span class="t">' + p.cap + "</span></span>";
+      b.addEventListener("click", function(){ openLb(i, b); });
+      li.appendChild(b); grid.appendChild(li);
+    });
+    count.innerHTML = "<b>" + visible.length + "</b> photo" + (visible.length === 1 ? "" : "s");
+  }
+  function setFilter(id){
+    current = id;
+    visible = id === "all" ? PHOTOS.slice() : PHOTOS.filter(function(p){ return p.ev === id; });
+    [].forEach.call(filters.querySelectorAll("button"), function(b, i){ b.setAttribute("aria-pressed", EVENTS[i].id === id ? "true" : "false"); });
+    render();
+  }
+  render();
+
+  /* lightbox */
+  var lb = document.getElementById("lb"), lbImg = document.getElementById("lbImg"), lbCap = document.getElementById("lbCap");
+  var at = 0, opener = null;
+  function show(i){
+    at = (i + visible.length) % visible.length;
+    var p = visible[at];
+    lbImg.src = "assets/gallery/" + p.f + ".jpg"; lbImg.alt = p.cap;
+    lbCap.innerHTML = "<b>" + p.n + " / " + String(PHOTOS.length).padStart(2, "0") + "</b>" + p.cap;
+  }
+  function openLb(i, from){ opener = from; show(i); lb.hidden = false; document.body.style.overflow = "hidden"; document.getElementById("lbClose").focus(); }
+  function closeLb(){ lb.hidden = true; document.body.style.overflow = ""; if (opener) opener.focus(); }
+  document.getElementById("lbPrev").addEventListener("click", function(){ show(at - 1); });
+  document.getElementById("lbNext").addEventListener("click", function(){ show(at + 1); });
+  document.getElementById("lbClose").addEventListener("click", closeLb);
+  lb.addEventListener("click", function(e){ if (e.target === lb) closeLb(); });
+  document.addEventListener("keydown", function(e){
+    if (lb.hidden) return;
+    if (e.key === "Escape") closeLb();
+    else if (e.key === "ArrowLeft") show(at - 1);
+    else if (e.key === "ArrowRight") show(at + 1);
+  });
+  var tx = null;
+  lb.addEventListener("touchstart", function(e){ tx = e.touches[0].clientX; }, {passive: true});
+  lb.addEventListener("touchend", function(e){
+    if (tx === null) return; var dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 45) show(at + (dx < 0 ? 1 : -1));
+  });
+
+})();
+</script>
+</body>
+</html>
